@@ -3,24 +3,21 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart IO</title>
-</head>
-
-<body>
     <style>
-        * {
+        body,
+        html {
+            margin: 0;
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
             background-color: #444;
             color: #eee;
             display: flex;
-            padding: 1rem;
-            margin: 0;
             flex-wrap: wrap;
             align-items: baseline;
             align-content: center;
+            padding: 1rem;
         }
 
         .tab-button {
@@ -28,11 +25,15 @@
             right: 20px;
             width: 80px;
             height: 80px;
-            border-radius: 40px;
+            border-radius: 50%;
             background-color: #222;
-            border-color: #4ee;
-            fill: #4ee;
-            padding: 3px 12px 0 12px;
+            border: 1px solid #4ee;
+            color: #4ee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .tab-button.first {
@@ -44,15 +45,14 @@
         }
 
         .tab-button.small {
-            right: 35px;
             width: 50px;
             height: 50px;
-            border-radius: 25px;
+            right: 35px;
         }
 
         .tab-button:hover {
             background-color: #444;
-            fill: #fff;
+            color: #fff;
         }
 
         .tab-button:active {
@@ -67,10 +67,10 @@
             padding: 1rem;
             flex-wrap: wrap;
             align-items: center;
-            align-content: center;
             justify-content: flex-start;
-            border: solid 1px #444;
+            border: 1px solid #444;
             border-radius: 5px;
+            transition: border-color 0.3s;
         }
 
         .panel:hover {
@@ -81,13 +81,13 @@
             max-width: 15rem;
         }
 
-        .panel.panel-button {
+        .panel-button {
             padding: 0;
         }
-        
-        .panel.panel-button button {
+
+        .panel-button button {
             margin: 0;
-            border: solid 1px #444;
+            border: 1px solid #444;
             border-radius: 5px;
         }
 
@@ -106,9 +106,10 @@
         select,
         button {
             background-color: #fff;
-            border: solid 1px #444;
+            border: 1px solid #444;
             padding: 0.5rem;
             font-size: medium;
+            transition: border-color 0.3s;
         }
 
         input:hover,
@@ -124,11 +125,10 @@
             background-color: #444;
             color: #eee;
         }
-
-        hr {
-            background-color: #444;
-        }
     </style>
+</head>
+
+<body>
     <div class="panel thin home">
         <label>Client device #1</label>
         <hr>
@@ -138,8 +138,10 @@
         <button onclick="turn_on_cd(1)">Turn on</button>
         <button onclick="turn_off_cd(1)">Turn off</button>
     </div>
+
     {{devices_home}}
-    <div class="panel thin settings" style="display:none">
+
+    <div class="panel thin settings" style="display: none;">
         <label>Device settings</label>
         <hr>
         <label for="ssid">WiFi SSID</label>
@@ -149,49 +151,71 @@
         <hr>
         <button onclick="save_ds()">Save</button>
     </div>
-    <div class="panel thin settings" style="display:none">
+
+    <div class="panel thin settings" style="display: none;">
         <label>Client device #1</label>
         <hr>
-        <label for="d1-id">Device IP</label>
+        <label for="d1-ip">Device IP</label>
         <input type="text" id="d1-ip" value="{{current-d1-ip}}">
         <hr>
         <button onclick="save_cd(1)">Save</button>
     </div>
+
     {{devices_settings}}
-    <div class="panel thin settings panel-button" style="display:none">
+
+    <div class="panel thin settings panel-button" style="display: none;">
         <button onclick="add_new_cd()">Add new client device</button>
     </div>
+
+    <!-- Tab Buttons -->
     <button class="tab-button second small" onclick="open_settings()">
         <svg viewBox="0 0 18 18">
             <path
                 d="M17 7h-.76a1 1 0 0 1-.7-1.71l.53-.53a1.008 1.008 0 0 0 0-1.42l-1.41-1.41a1.008 1.008 0 0 0-1.42 0l-.51.51a.974.974 0 0 1-.73.32 1 1 0 0 1-1-1V1a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v.76a1 1 0 0 1-1 1 .974.974 0 0 1-.73-.32l-.51-.51a1.008 1.008 0 0 0-1.42 0L1.93 3.34a1.008 1.008 0 0 0 0 1.42c.19.19.4.37.58.57a.92.92 0 0 1 .25.67 1 1 0 0 1-1 1H1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.76a1 1 0 0 1 1 1 .92.92 0 0 1-.25.67c-.18.2-.39.38-.58.57a1.008 1.008 0 0 0 0 1.42l1.41 1.41a1.008 1.008 0 0 0 1.42 0l.51-.51a.974.974 0 0 1 .73-.32 1 1 0 0 1 1 1V17a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.76a1 1 0 0 1 1-1 .974.974 0 0 1 .73.32l.51.51a1.008 1.008 0 0 0 1.42 0l1.41-1.41a1.008 1.008 0 0 0 0-1.42l-.53-.53a1 1 0 0 1 .7-1.71H17a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zm-8 5a3 3 0 1 1 3-3 3 3 0 0 1-3 3z">
+            </path>
         </svg>
     </button>
+
     <button class="tab-button first" onclick="open_home()">
-        <svg viewBox="0 0 24 24"><path d="M21 13v10h-6v-6h-6v6h-6v-10h-3l12-12 12 12h-3zm-1-5.907v-5.093h-3v2.093l3 3z"/></svg>
+        <svg viewBox="0 0 24 24">
+            <path d="M21 13v10h-6v-6h-6v6h-6v-10h-3l12-12 12 12h-3zm-1-5.907v-5.093h-3v2.093l3 3z"></path>
+        </svg>
     </button>
+
     <script>
         function save_ds() {
-            const ssid = document.getElementById('ssid').value
-            const pass = document.getElementById('pass').value
-            fetch('/save-ds', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({'ssid': ssid, 'pass': pass})})
-            setTimeout(() => location.reload(), 1000)
+            const ssid = document.getElementById('ssid').value;
+            const pass = document.getElementById('pass').value;
+            fetch('/save-ds', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 'ssid': ssid, 'pass': pass })
+            });
+            setTimeout(() => location.reload(), 1000);
         }
-        function save_cd(number) {
-            const ip = document.getElementById(`d${number}-ip`).value
-            fetch('/save-cd', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({'cd-number': number, 'ip': ip})})
-            setTimeout(() => location.reload(), 1000)
-        }
-        function add_new_cd() {
 
+        function save_cd(number) {
+            const ip = document.getElementById(`d${number}-ip`).value;
+            fetch('/save-cd', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 'cd-number': number, 'ip': ip })
+            });
+            setTimeout(() => location.reload(), 1000);
         }
+
+        function add_new_cd() {
+            // Implementation for adding a new client device can be added here
+        }
+
         function open_settings() {
-            document.querySelectorAll('div.home').forEach(e => e.style.display = 'none')
-            document.querySelectorAll('div.settings').forEach(e => e.style.display = 'flex')
+            document.querySelectorAll('div.home').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('div.settings').forEach(e => e.style.display = 'flex');
         }
+
         function open_home() {
-            document.querySelectorAll('div.home').forEach(e => e.style.display = 'flex')
-            document.querySelectorAll('div.settings').forEach(e => e.style.display = 'none')
+            document.querySelectorAll('div.home').forEach(e => e.style.display = 'flex');
+            document.querySelectorAll('div.settings').forEach(e => e.style.display = 'none');
         }
     </script>
 </body>
