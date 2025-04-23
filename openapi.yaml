@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: Smart IO API
+  description: |-
+    This is the description of API for Smart IO controllers
+  version: 1.0.1
+servers:
+  - url: http://192.168.0.150/api/v1
+tags:
+  - name: light sensor
+    description: Functions related to the light sensor
+  - name: relay
+    description: Functions controlling the relay
+  - name: led
+    description: Operations controlling the PWM devices
+paths:
+  /sensor:
+    get:
+      tags:
+        - light sensor
+      summary: Returns the current lightness value from the sensor.
+      responses:
+        '200':
+          description: Successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorData'
+  /relay:
+    get:
+      tags:
+        - relay
+      summary: Returns the current state of the relay
+      responses:
+        '200':
+          description: Successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelayState'
+    post:
+      tags:
+        - relay
+      summary: Sets the value of the relay (turns off / on).
+      requestBody:
+        description: Create a new pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelayState'
+      responses:
+        '200':
+          description: Successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+  /led:
+    get:
+      tags:
+        - led
+      summary: Returns the current state of the PWM
+      responses:
+        '200':
+          description: Successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PWMState'
+    post:
+      tags:
+        - led
+      summary: Sets the value of the PWM.
+      requestBody:
+        description: Create a new pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PWMState'
+      responses:
+        '200':
+          description: Successfull operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+components:
+  schemas:
+    SensorData:
+      type: object
+      properties:
+        state:
+          type: integer
+          format: int64
+          example: 10
+    RelayState:
+      type: object
+      properties:
+        state:
+          type: string
+          example: on
+          enum:
+            - on
+            - off
+    PWMState:
+      type: object
+      properties:
+        state:
+          type: integer
+          format: int64
+          example: 10
+    ActionResult:
+      type: object
+      properties:
+        state:
+          type: string
+          example: success
+          enum:
+            - success
+            - error
+        error:
+          type: string
+          example: Invalid JSON
