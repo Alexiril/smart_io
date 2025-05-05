@@ -1,0 +1,44 @@
+<b>Количество подключенных устройств: <span id="devices-amount">{{ devices | length }}</span></b>
+{% for device in devices %}
+<div class="device-line" id="device-{{ device.id }}">
+    <div class="row">
+        <div class="left">
+            <span>
+                <i class="fa-solid fa-{{ device.role_icon }}"></i>
+            </span>
+            <span>
+                <kbd>
+                    {{ device.name }}
+                </kbd>
+                <kbd style="background:var(--pico-primary-background);">
+                    {{ device.ip }}
+                </kbd>
+                <kbd style="background:#faa;">
+                     Device ID {{ device.id }}
+                </kbd>
+            </span>
+            <span>
+                <kbd class="status-{{ device.id }} device-error">Не работает</kbd>
+            </span>
+        </div>
+        <div>
+            <button class="show-additional-data" data-device-id="{{ device.id }}"><i
+                    class="icon fa-solid fa-info-circle"></i></button>
+            <button class="remove-device" data-device-id="{{ device.id }}"><i
+                    class="icon fa-solid fa-circle-xmark"></i></button>
+        </div>
+    </div>
+    <div style="display:none" class="device-additional-info row" id="device-{{ device.id }}-additional-info">
+        <div>
+            Освещенность: <b id="lightness-{{ device.id }}">0</b><br>
+            Состояние реле: <kbd id="relay-{{ device.id }}">Off</kbd><br>
+            Яркость LED: <b id="led-{{ device.id }}">0</b><br>
+            Ошибка: <i id="error-{{ device.id }}">Отсутствует</i>
+        </div>
+        <div>
+            <button class="secondary toggle-relay" data-device-id="{{ device.id }}">Переключить реле</button>
+            <button class="secondary set-led" data-device-id="{{ device.id }}">Установить яркость LED</button>
+        </div>
+    </div>
+</div>
+{% endfor %}

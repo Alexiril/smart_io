@@ -117,3 +117,36 @@ article.device {
     gap: 10px;
     width: 100%;
 }
+
+.event-line {
+    padding: 10px 20px;
+    background-color: var(--pico-code-background-color);
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.event-line .row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.event-line .row .left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.event-line .row .left i {
+    font-size: xx-large;
+}
+
+.event-line .row button.icon {
+    font-size: x-large;
+}

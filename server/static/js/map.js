@@ -102,6 +102,7 @@ $(function () {
             success: function (response) {
                 console.log(response);
                 $(`#device-${device_id}`).remove()
+                $(`#devices-amount`).text(parseInt($(`#devices-amount`).text()) - 1)
             },
             error: function (xhr, status, error) {
                 console.error("Error removing device:", error)
@@ -165,5 +166,24 @@ $(function () {
     })
     $(".close-short-settings").on("click", function () {
         $(this).parents(".device-short-settings").hide()
+    })
+    $(".remove-event").on("click", function () {
+        const event_id = $(this).data("event-id");
+        $.ajax({
+            url: "/remove-event",
+            type: "POST",
+            data: JSON.stringify({
+                event_id: event_id,
+            }),
+            contentType: "application/json",
+            success: function (response) {
+                console.log(response);
+                $(`#event-${event_id}`).remove()
+                $(`#events-amount`).text(parseInt($(`#events-amount`).text()) - 1)
+            },
+            error: function (xhr, status, error) {
+                console.error("Error removing event:", error)
+            }
+        })
     })
 })

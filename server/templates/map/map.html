@@ -8,73 +8,32 @@
     <main>
         <div class="map" id="map">
             {% for device in devices %}
-            <div class="device-on-map" style="left:{{ device[4] }}px;top:{{ device[5] }}px"
-                data-device-id="{{ device[0] }}">
-                <i class="fa-solid fa-{{ device[3] }}"></i>
-                <sub>#{{ device[0] }}</sub>
+            <div class="device-on-map" style="left:{{ device.coord_x }}px;top:{{ device.coord_y }}px"
+                data-device-id="{{ device.id }}">
+                <i class="fa-solid fa-{{ device.role_icon }}"></i>
+                <sub>#{{ device.id }}</sub>
                 <div class="device-short-settings" style="display: none;">
                     <span class="line">
-                        <i class="fa-solid fa-{{ device[3] }}"></i>
-                        <kbd>{{ device[1] }}</kbd>
+                        <i class="fa-solid fa-{{ device.role_icon }}"></i>
+                        <kbd>{{ device.name }}</kbd>
                         <i class="fa-solid fa-xmark close-short-settings" style="color:red"></i>
                     </span>
-                    <span class="line"><kbd class="status-{{ device[0] }} device-error">Не работает</kbd></span>
-                    <span class="line">Освещенность: <b id="lightness-{{ device[0] }}">0</b></span>
+                    <span class="line"><kbd class="status-{{ device.id }} device-error">Не работает</kbd></span>
+                    <span class="line">Освещенность: <b id="lightness-{{ device.id }}">0</b></span>
                     <span class="line">
                         LED: <input type="range" min="0" max="100" value="50" class="set-led-range"
-                            id="led-range-{{ device[0] }}" data-device-id="{{ device[0] }}" style="margin: 0;">
+                            id="led-range-{{ device.id }}" data-device-id="{{ device.id }}" style="margin: 0;">
                     </span>
                     <span class="line"><button class="toggle-relay" style="font-size:.875em;padding:5px"
-                            data-device-id="{{ device[0] }}">Переключить реле</button></span>
+                            data-device-id="{{ device.id }}">Переключить реле</button></span>
                 </div>
             </div>
             {% endfor %}
         </div>
     </main>
     <footer>
-        <b>Количество подключенных устройств: {{ devices | length }}</b>
-        {% for device in devices %}
-        <div class="device-line" id="device-{{ device[0] }}">
-            <div class="row">
-                <div class="left">
-                    <span>
-                        <i class="fa-solid fa-{{ device[3] }}"></i>
-                    </span>
-                    <span>
-                        <kbd>
-                            {{ device[1] }}
-                        </kbd>
-                    </span>
-                    <span>
-                        <sub>
-                            {{ device[2] }} (Device ID: {{ device[0] }})
-                        </sub>
-                    </span>
-                    <span>
-                        <kbd class="status-{{ device[0] }} device-error">Не работает</kbd>
-                    </span>
-                </div>
-                <div>
-                    <button class="show-additional-data" data-device-id="{{ device[0] }}"><i
-                            class="icon fa-solid fa-info-circle"></i></button>
-                    <button class="remove-device" data-device-id="{{ device[0] }}"><i
-                            class="icon fa-solid fa-circle-xmark"></i></button>
-                </div>
-            </div>
-            <div style="display:none" class="device-additional-info row" id="device-{{ device[0] }}-additional-info">
-                <div>
-                    Освещенность: <b id="lightness-{{ device[0] }}">0</b><br>
-                    Состояние реле: <kbd id="relay-{{ device[0] }}">Off</kbd><br>
-                    Яркость LED: <b id="led-{{ device[0] }}">0</b><br>
-                    Ошибка: <i id="error-{{ device[0] }}">Отсутствует</i>
-                </div>
-                <div>
-                    <button class="secondary toggle-relay" data-device-id="{{ device[0] }}">Переключить реле</button>
-                    <button class="secondary set-led" data-device-id="{{ device[0] }}">Установить яркость LED</button>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
+        {% include "subfields/devices.html" %}
+        {% include "subfields/events.html" %}
     </footer>
 </article>
 <script src="/static/js/map.js"></script>

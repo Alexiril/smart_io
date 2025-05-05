@@ -1,0 +1,35 @@
+<article>
+    <header>
+        <h5>Добавление нового временного события</h5>
+    </header>
+    <main>
+        <form method="POST" action="/add-timed-event" id="add-timed-event-form">
+            <fieldset>
+                <label>
+                    Выберите устройство
+                    <select name="device_id" id="device_id" required>
+                        {% for device in devices %}
+                            <option value="{{ device.id }}">{{ device.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Выберите тип события
+                    <select name="event_type" id="event_type">
+                        {% for event_type, event_type_name in event_types.items() %}
+                            <option value="{{ event_type }}">{{ event_type_name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Время события
+                    <input type="time" name="event_time" id="event_time" required>
+                </label>
+            </fieldset>
+            <button type="submit">Добавить</button>
+            <a href="/">
+                <input type="button" value="Отмена" class="secondary">
+            </a>
+        </form>
+    </main>
+</article>

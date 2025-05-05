@@ -1,6 +1,9 @@
+from datetime import datetime
 from os import mkdir
 from pathlib import Path
 from sqlite3 import connect as sqlite_connect
+from threading import Thread
+from time import sleep
 from typing import Any
 
 from fastapi import FastAPI, Request, Response, UploadFile
@@ -13,10 +16,12 @@ from requests import post as requests_post
 from starlette import status
 from uvicorn import run as uvirun
 
+quitting = False
+
 server_path = Path(".") / "server"
 
 # Database singleton
-db = sqlite_connect("server.db")
+db = sqlite_connect("server.db", check_same_thread=False)
 
 
 def create_devices_table() -> None:
@@ -33,13 +38,78 @@ def create_devices_table() -> None:
         """)
 
 
+def create_timed_events_table() -> None:
+    with db:
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS timed_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                device_id INTEGER NOT NULL,
+                event_type TEXT NOT NULL,
+                event_time TEXT NOT NULL,
+                FOREIGN KEY (device_id) REFERENCES devices (id)
+            );
+        """)
+
+
 create_devices_table()
+create_timed_events_table()
 
 # FastAPI app
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=server_path / "static"), "static")
 
 templates = Jinja2Templates(directory=server_path / "templates")
+
+device_roles_icons = {
+    "mixed": "lightbulb",
+    "led": "chart-simple",
+    "relay": "shuffle",
+    "sensor": "arrow-up-right-dots",
+}
+
+EVENT_TYPES = {
+    "relay-on": "Включить реле",
+    "relay-off": "Выключить реле",
+    "relay-toggle": "Переключить реле",
+    "led-on": "Включить LED",
+    "led-off": "Выключить LED",
+    "led-toggle": "Переключить LED",
+}
+
+
+class ActualDevice:
+    id: int
+    name: str
+    ip: str
+    role: str
+    role_icon: str
+    coord_x: int
+    coord_y: int
+
+    def __init__(self, id: int, name: str, ip: str, role: str, coord_x: int, coord_y: int) -> None:
+        self.id = id
+        self.name = name
+        self.ip = ip
+        self.role = role
+        self.coord_x = coord_x
+        self.coord_y = coord_y
+
+        self.role_icon = device_roles_icons.get(role, "question")
+
+
+class ActualEvent:
+    id: int
+    device_id: int
+    type: str
+    time: str
+    device: ActualDevice
+
+    def __init__(self, id: int, device_id: int, type: str, time: str) -> None:
+        self.id = id
+        self.device_id = device_id
+        self.type = type
+        self.time = time
+        self.device = list(filter(lambda x: x.id == self.device_id, get_devices()))[0]
 
 
 class DeviceId(BaseModel):
@@ -55,29 +125,121 @@ class DeviceWithPosition(DeviceId):
     coord_y: int
 
 
-@app.get("/")
-async def root(request: Request) -> HTMLResponse:
+class EventId(BaseModel):
+    event_id: int
+
+
+def get_devices() -> list[ActualDevice]:
     with db:
         devices: list[tuple[int, str, str, str, int, int]] = db.execute(
             "SELECT id, device_name, device_ip, device_role, coord_x, coord_y FROM devices"
         ).fetchall()
 
-    device_roles_icons = {
-        "mixed": "lightbulb",
-        "led": "chart-simple",
-        "relay": "shuffle",
-        "sensor": "arrow-up-right-dots",
-    }
+    return [ActualDevice(*device) for device in devices]
 
-    devices = list(map(lambda x: (x[0], x[1], x[2], device_roles_icons[x[3]], x[4], x[5]), devices))
 
+def get_events() -> list[ActualEvent]:
+    with db:
+        events: list[tuple[int, int, str, str]] = db.execute(
+            "SELECT id, device_id, event_type, event_time FROM timed_events"
+        ).fetchall()
+
+    return [ActualEvent(*event) for event in events]
+
+
+def handle_timed_events() -> None:
+    global quitting
+
+    events_db = sqlite_connect("server.db", check_same_thread=False)
+
+    while not quitting:
+        with events_db:
+            events: list[tuple[int, int, str, str]] = events_db.execute(
+                "SELECT id, device_id, event_type, event_time FROM timed_events"
+            ).fetchall()
+
+        for event in events:
+            e = ActualEvent(*event)
+            device_ip = e.device.ip
+            hours, minutes = e.time.split(":")
+            now = datetime.now()
+            current_hours = now.hour
+            current_minutes = now.minute
+            if current_hours == int(hours) and current_minutes == int(minutes):
+                try:
+                    if e.type == "relay-on":
+                        requests_post(
+                            f"http://{device_ip}/api/v1/relay",
+                            json={"state": "on"},
+                            timeout=2,
+                        )
+                    elif e.type == "relay-off":
+                        requests_post(
+                            f"http://{device_ip}/api/v1/relay",
+                            json={"state": "off"},
+                            timeout=2,
+                        )
+                    elif e.type == "led-on":
+                        requests_post(
+                            f"http://{device_ip}/api/v1/led",
+                            json={"state": 100},
+                            timeout=2,
+                        )
+                    elif e.type == "led-off":
+                        requests_post(
+                            f"http://{device_ip}/api/v1/led",
+                            json={"state": 0},
+                            timeout=2,
+                        )
+                except Exception as exception:
+                    print(f"Failed to execute event {e.id}: {exception}")
+                print(f"Executed event {e.id} at {e.time} on device {e.device.name} ({device_ip})")
+        sleep(60)
+
+
+@app.get("/favicon.ico")
+async def favicon() -> Response:
+    return FileResponse(server_path / "static" / "img" / "favicon.png")
+
+
+@app.get("/")
+async def root(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request,
         "index.html",
         {
-            "devices": devices,
+            "devices": get_devices(),
+            "events": get_events(),
         },
     )
+
+
+@app.get("/add-timed-event")
+async def add_timed_event(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request,
+        "add_timed_event.html",
+        {
+            "devices": get_devices(),
+            "event_types": EVENT_TYPES,
+        },
+    )
+
+
+@app.post("/add-timed-event")
+async def add_timed_event_post(request: Request) -> RedirectResponse:
+    form_data = await request.form()
+    device_id = form_data.get("device_id")
+    event_type = form_data.get("event_type")
+    event_time = form_data.get("event_time")
+
+    with db:
+        db.execute(
+            "INSERT INTO timed_events (device_id, event_type, event_time) VALUES (?, ?, ?)",
+            (device_id, event_type, event_time),
+        )
+
+    return RedirectResponse("/", status_code=status.HTTP_302_FOUND)
 
 
 @app.get("/map-background")
@@ -229,10 +391,7 @@ async def devices_data() -> JSONResponse:
         device_ip = device[1]
 
         try:
-            response = requests_get(
-                f"http://{device_ip}/api/v1/status",
-                timeout=2
-            ).json()
+            response = requests_get(f"http://{device_ip}/api/v1/status", timeout=2).json()
             result[device_id] = {
                 "result": "success",
                 "lightness": response["lightness"],
@@ -271,17 +430,14 @@ async def toggle_relay(inp: DeviceId) -> JSONResponse:
             )
 
     try:
-        relay_state = requests_get(
-            f"http://{device_ip[0]}/api/v1/relay",
-            timeout=2
-        ).json()["state"]
+        relay_state = requests_get(f"http://{device_ip[0]}/api/v1/relay", timeout=2).json()["state"]
 
         requests_post(
             f"http://{device_ip[0]}/api/v1/relay",
             json={
                 "state": "on" if relay_state == "off" else "off",
             },
-            timeout=2
+            timeout=2,
         )
     except Exception as e:
         return JSONResponse(
@@ -326,7 +482,7 @@ async def set_led(inp: LEDModel) -> JSONResponse:
             json={
                 "state": brightness,
             },
-            timeout=2
+            timeout=2,
         )
     except Exception as e:
         return JSONResponse(
@@ -346,8 +502,40 @@ async def set_led(inp: LEDModel) -> JSONResponse:
     )
 
 
+@app.post("/remove-event")
+async def remove_event(inp: EventId) -> JSONResponse:
+    event_id = inp.event_id
+    with db:
+        if (event_id,) not in db.execute("SELECT id FROM timed_events").fetchall():
+            return JSONResponse(
+                content={
+                    "status": "error",
+                    "message": "Event not found",
+                },
+                status_code=400,
+            )
+
+        db.execute(
+            "DELETE FROM timed_events WHERE id = ?",
+            (event_id,),
+        )
+
+    return JSONResponse(
+        content={
+            "status": "success",
+            "message": "Event removed successfully",
+        },
+        status_code=200,
+    )
+
+
 def main() -> None:
+    global quitting
+    timed_events_thread = Thread(target=handle_timed_events)
+    timed_events_thread.start()
     uvirun(app, host="0.0.0.0", port=80)
+    quitting = True
+    timed_events_thread.join()
 
 
 if __name__ == "__main__":

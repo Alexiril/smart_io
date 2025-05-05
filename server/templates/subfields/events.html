@@ -1,0 +1,24 @@
+<b>Количество временных событий: <span id="events-amount">{{ events | length }}</span></b>
+{% for event in events %}
+<div class="event-line" id="event-{{ event.id }}">
+    <div class="row">
+        <div class="left">
+            <span>
+                <kbd>{{ event.device.name }}</kbd>
+            </span>
+            <span>
+                <kbd style="background:var(--pico-primary-background);"> {{ event.time }} </kbd>
+            </span>
+            <span>
+                <kbd style="background:#faa;">
+                    {{ event.type }}
+                </kbd>
+            </span>
+        </div>
+        <div>
+            <button class="remove-event" data-event-id="{{ event.id }}"><i
+                    class="icon fa-solid fa-circle-xmark"></i></button>
+        </div>
+    </div>
+</div>
+{% endfor %}
