@@ -231,6 +231,7 @@ async def devices_data() -> JSONResponse:
         try:
             response = requests_get(
                 f"http://{device_ip}/api/v1/status",
+                timeout=2
             ).json()
             result[device_id] = {
                 "result": "success",
@@ -272,6 +273,7 @@ async def toggle_relay(inp: DeviceId) -> JSONResponse:
     try:
         relay_state = requests_get(
             f"http://{device_ip[0]}/api/v1/relay",
+            timeout=2
         ).json()["state"]
 
         requests_post(
@@ -279,6 +281,7 @@ async def toggle_relay(inp: DeviceId) -> JSONResponse:
             json={
                 "state": "on" if relay_state == "off" else "off",
             },
+            timeout=2
         )
     except Exception as e:
         return JSONResponse(
@@ -323,6 +326,7 @@ async def set_led(inp: LEDModel) -> JSONResponse:
             json={
                 "state": brightness,
             },
+            timeout=2
         )
     except Exception as e:
         return JSONResponse(
