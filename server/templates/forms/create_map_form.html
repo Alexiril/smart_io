@@ -1,0 +1,19 @@
+<article>
+    <header>
+        <h5>Создание новой карты</h5>
+    </header>
+    <main>
+        <form method="post" action="/create-map" enctype="multipart/form-data">
+            <fieldset>
+                <label>
+                    Выберите файл изображения карты
+                    <input type="file" name="map_image" id="map_image" accept="image/*">
+                </label>
+            </fieldset>
+            <button type="submit">Создать</button>
+            <a href="/">
+                <input type="button" value="Отмена" class="secondary">
+            </a>
+        </form>
+    </main>
+</article>

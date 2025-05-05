@@ -1,0 +1,7 @@
+{
+    "flake8.args": [
+        "--max-line-length=120",
+        "--ignore=E203,E301,E302,E305,W503,E701,E704"
+    ],
+    "ruff.lineLength": 120,
+}

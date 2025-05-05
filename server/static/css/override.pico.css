@@ -1,0 +1,119 @@
+body header {
+    padding-left: 2vw;
+    padding-right: 2vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+body header .logo {
+    display: flex;
+    align-items: center;
+    gap: 1.5em;
+}
+
+body header .nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+body main {
+    padding-left: 2vw;
+    padding-right: 2vw;
+}
+
+main .map {
+    width: 100%;
+    min-height: 50vh;
+    overflow: hidden;
+    background: url("/map-background") no-repeat, url("/static/img/grid.svg") repeat;
+}
+
+article.device {
+    background-color: var(--pico-form-element-selected-background-color);
+    min-width: 200px;
+    width: min-content;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+}
+
+.device-line {
+    padding: 10px 20px;
+    background-color: var(--pico-code-background-color);
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.device-line .row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.device-line .row .left {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.device-line .row .left i {
+    font-size: xx-large;
+}
+
+.device-line .row button.icon {
+    font-size: x-large;
+}
+
+.device-error {
+    background-color: red;
+    color: white;
+}
+
+.device-okay {
+    background-color: green;
+    color: white;
+}
+
+.device-on-map {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    background-color: var(--pico-primary-background);
+    padding: 0;
+    margin: 0;
+    border-radius: 5px;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.device-short-settings {
+    left: 10px;
+    top: 10px;
+    position: absolute;
+    padding: 10px;
+    border-radius: 5px;
+    border: var(--pico-primary-border) solid 1px;
+    background-color: var(--pico-background-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.device-short-settings span.line {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    gap: 10px;
+    width: 100%;
+}

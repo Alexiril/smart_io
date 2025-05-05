@@ -1,0 +1,48 @@
+<article>
+    <header>
+        <h5>Добавление нового устройства</h5>
+    </header>
+    <main>
+        <form>
+            <fieldset>
+                <label>
+                    Название устройства
+                    <input type="text" name="device_name" id="device_name">
+                </label>
+            </fieldset>
+            <fieldset>
+                <label>
+                    IP адрес устройства
+                    <input type="text" name="device_ip" id="device_ip" placeholder="192.168.X.X">
+                </label>
+            </fieldset>
+            <fieldset>
+                <label>
+                    Основная роль устройства
+                    <select name="device_role" id="device_role">
+                        <option value="mixed">Общая роль</option>
+                        <option value="led">Управление LED</option>
+                        <option value="relay">Управление реле</option>
+                        <option value="sensor">Датчик света</option>
+                    </select>
+                </label>
+            </fieldset>
+            <article class="device">
+                <div class="fa-solid">
+                    <!-- left side -->
+                    <i id="device_role_field" class="fa-lightbulb" style="font-size:xxx-large;font-style:normal"></i>
+                </div>
+                <div>
+                    <!-- right side -->
+                    <strong id="device_name_field">Устройство</strong><br>
+                    <small id="device_ip_field">IP адрес</small>
+                </div>
+            </article>
+            <input type="button" value="Добавить" id="add-device-button">
+            <a href="/">
+                <input type="button" value="Отмена" class="secondary">
+            </a>
+        </form>
+    </main>
+</article>
+<script src="/static/js/add_device_form.js"></script>

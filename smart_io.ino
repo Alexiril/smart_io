@@ -8,9 +8,15 @@
 
 WebServer server(80);
 
+const int ledPin = 2; // Pin for the LED
+const int lightIterations = 20; // Amount of iterations when led will be on
+
 const int lightSensorPin = 15;
 const int relayPin = 2;
 const int pwmPin = 4;
+
+bool wasServerAction = false; // Flag to check if server action was performed
+int currentLightIteration = 0; // Variable to store the current led iteration
 
 // States
 String relayState = "off"; // Relay state (on/off)
@@ -21,9 +27,24 @@ int getLigthSensorValue()
   return analogRead(lightSensorPin);
 }
 
+// Handler for GET /status
+void handleStatus()
+{
+  wasServerAction = true;
+  StaticJsonDocument<200> doc;
+  doc["lightness"] = getLigthSensorValue();
+  doc["relay"] = relayState;
+  doc["led-state"] = pwmValue;
+
+  String response;
+  serializeJson(doc, response);
+  server.send(200, "application/json", response);
+}
+
 // Handler for GET /sensor
 void handleGetSensor()
 {
+  wasServerAction = true;
   StaticJsonDocument<200> doc;
   doc["state"] = getLigthSensorValue();
 
@@ -35,6 +56,7 @@ void handleGetSensor()
 // Handler for GET /relay
 void handleGetRelay()
 {
+  wasServerAction = true;
   StaticJsonDocument<200> doc;
   doc["state"] = relayState;
 
@@ -46,6 +68,7 @@ void handleGetRelay()
 // Handler for POST /relay
 void handlePostRelay()
 {
+  wasServerAction = true;
   if (server.hasArg("plain") == false)
   { // No body received
     server.send(400, "application/json", "{\"state\":\"error\",\"error\":\"Bad request\"}");
@@ -92,6 +115,7 @@ void handlePostRelay()
 // Handler for GET /led
 void handleGetLed()
 {
+  wasServerAction = true;
   StaticJsonDocument<200> doc;
   doc["state"] = pwmValue;
 
@@ -103,6 +127,7 @@ void handleGetLed()
 // Handler for POST /led
 void handlePostLed()
 {
+  wasServerAction = true;
   if (server.hasArg("plain") == false)
   { // No body received
     server.send(400, "application/json", "{\"state\":\"error\",\"error\":\"Bad request\"}");
@@ -138,6 +163,7 @@ void setup()
   pinMode(lightSensorPin, INPUT);
   pinMode(relayPin, OUTPUT);
   pinMode(pwmPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);
 
   digitalWrite(relayPin, LOW);
   digitalWrite(pwmPin, LOW);
@@ -155,6 +181,7 @@ void setup()
   Serial.println(WiFi.localIP());
 
   // Define API endpoints
+  server.on("/api/v1/status", HTTP_GET, handleStatus);
   server.on("/api/v1/sensor", HTTP_GET, handleGetSensor);
   server.on("/api/v1/relay", HTTP_GET, handleGetRelay);
   server.on("/api/v1/relay", HTTP_POST, handlePostRelay);
@@ -168,5 +195,16 @@ void setup()
 
 void loop()
 {
+  wasServerAction = false; // Reset the flag at the beginning of each loop
+  if (currentLightIteration > 0) {
+    currentLightIteration -= 1;
+  }
+  digitalWrite(ledPin, currentLightIteration > 0 ? HIGH : LOW);
+  // Handle client requests
   server.handleClient();
+  if (wasServerAction)
+  {
+    currentLightIteration = lightIterations;
+    digitalWrite(ledPin, HIGH);
+  }
 }
