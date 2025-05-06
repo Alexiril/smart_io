@@ -11,9 +11,9 @@ WebServer server(80);
 const int ledPin = 2; // Pin for the LED
 const int lightIterations = 20; // Amount of iterations when led will be on
 
-const int lightSensorPin = 15;
-const int relayPin = 2;
-const int pwmPin = 4;
+const int lightSensorPin = 32;
+const int relayPin = 19;
+const int pwmPin = 21;
 
 bool wasServerAction = false; // Flag to check if server action was performed
 int currentLightIteration = 0; // Variable to store the current led iteration
@@ -21,18 +21,14 @@ int currentLightIteration = 0; // Variable to store the current led iteration
 // States
 String relayState = "off"; // Relay state (on/off)
 int pwmValue = 0;          // PWM state (0-255)
-
-int getLigthSensorValue()
-{
-  return analogRead(lightSensorPin);
-}
+int lightSensorValue = 0;
 
 // Handler for GET /status
 void handleStatus()
 {
   wasServerAction = true;
   StaticJsonDocument<200> doc;
-  doc["lightness"] = getLigthSensorValue();
+  doc["lightness"] = lightSensorValue;
   doc["relay"] = relayState;
   doc["led-state"] = pwmValue;
 
@@ -46,7 +42,7 @@ void handleGetSensor()
 {
   wasServerAction = true;
   StaticJsonDocument<200> doc;
-  doc["state"] = getLigthSensorValue();
+  doc["state"] = lightSensorValue;
 
   String response;
   serializeJson(doc, response);
@@ -159,8 +155,9 @@ void handlePostLed()
 void setup()
 {
   Serial.begin(115200);
+  analogReadResolution(12); 
+  analogSetPinAttenuation(lightSensorPin, ADC_11db);
 
-  pinMode(lightSensorPin, INPUT);
   pinMode(relayPin, OUTPUT);
   pinMode(pwmPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
@@ -195,6 +192,7 @@ void setup()
 
 void loop()
 {
+  lightSensorValue = analogRead(lightSensorPin);
   wasServerAction = false; // Reset the flag at the beginning of each loop
   if (currentLightIteration > 0) {
     currentLightIteration -= 1;

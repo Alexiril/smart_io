@@ -37,6 +37,22 @@ function make_devices_draggable() {
     })
 }
 
+function lightness_to_text(lightness) {
+    if (lightness < 40) {
+        return "Полная темнота"
+    }
+    if (lightness < 800) {
+        return "Темно"
+    }
+    if (lightness < 2000) {
+        return "Средняя освещенность"
+    }
+    if (lightness < 3200) {
+        return "Светло"
+    }
+    return "Очень светло"
+}
+
 function setting_data() {
     if (!$("#auto-update").prop('checked')) {
         return;
@@ -59,7 +75,7 @@ function setting_data() {
                     status_field.addClass("device-okay")
                     status_field.text("Работает")
 
-                    $(`#lightness-${device_id}`).text(value.lightness)
+                    $(`.lightness-${device_id}`).text(lightness_to_text(value.lightness))
                     $(`#relay-${device_id}`).text(value.relay_state)
                     $(`#led-${device_id}`).text(Math.round(value.led_state / 2.55))
                     $(`#led-range-${device_id}`).val(Math.round(value.led_state / 2.55))
